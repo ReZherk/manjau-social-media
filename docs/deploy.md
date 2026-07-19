@@ -1,24 +1,23 @@
 # Despliegue gratuito (Vercel + Render + Neon)
 
-Guía para publicar un **avance** de Manjau con capa gratuita:
+Guía **probada** para publicar Manjau con capa gratuita:
 
 - **Frontend** (React) → **Vercel**
 - **Backend** (Spring Boot) → **Render** (Docker)
 - **Base de datos** (PostgreSQL) → **Neon**
-- **Correo** (opcional) → **Brevo** (SMTP real) — si no lo configuras, el usuario
-  igual se crea; solo no se envía el correo.
+- **Correo** → **Gmail SMTP** (o Brevo) — real, para que lleguen las credenciales.
 
-> El proyecto ya está preparado: puerto dinámico (`PORT`), CORS por variable,
-> `/health`, `Dockerfile` de producción, `render.yaml` y `vercel.json`.
+> El proyecto ya viene preparado: puerto dinámico (`PORT`), CORS por variable,
+> endpoint `/health`, `Dockerfile` de producción, `render.yaml`, `vercel.json` y el
+> driver de PostgreSQL fijado a una versión compatible con Neon (ver nota más abajo).
 
 ---
 
 ## 0. Requisitos previos
 
-1. Cuenta en **GitHub** con este repo subido (Render y Vercel despliegan desde GitHub).
-2. Cuentas gratis en: [Neon](https://neon.tech), [Render](https://render.com), [Vercel](https://vercel.com) y (opcional) [Brevo](https://www.brevo.com).
+1. Repo en **GitHub** (Render y Vercel despliegan desde ahí).
+2. Cuentas gratis en [Neon](https://neon.tech), [Render](https://render.com) y [Vercel](https://vercel.com).
 
-Sube el repo a GitHub si aún no está:
 ```bash
 git init && git add . && git commit -m "Manjau - avance"
 git branch -M main
@@ -30,101 +29,110 @@ git push -u origin main
 
 ## 1. Base de datos — Neon
 
-1. Entra a Neon → **Create project** (región más cercana, p. ej. `AWS us-east`).
-2. Copia el **connection string** (botón *Connect*). Se ve así:
+1. Neon → **Create project**:
+   - Nombre libre, región más cercana (ej. `AWS US East 2 (Ohio)`).
+   - **Neon Auth: DÉJALO APAGADO** (no lo usamos, la app trae su propia auth).
+2. Copia el **connection string** (botón *Connect* → **Show password** → **Copy snippet**):
    ```
-   postgresql://usuario:PASSWORD@ep-xxxx.us-east-2.aws.neon.tech/neondb?sslmode=require
+   postgresql://neondb_owner:PASSWORD@ep-xxxx.c-3.us-east-2.aws.neon.tech/neondb?sslmode=require
    ```
-3. Desármalo para Spring (lo usarás en Render):
-   - `SPRING_DATASOURCE_URL` = `jdbc:postgresql://ep-xxxx.us-east-2.aws.neon.tech/neondb?sslmode=require`
-   - `SPRING_DATASOURCE_USERNAME` = `usuario`
+3. Desármalo para Render:
+   - `SPRING_DATASOURCE_URL` = `jdbc:postgresql://ep-xxxx.c-3.us-east-2.aws.neon.tech/neondb?sslmode=require`
+     *(pega la parte del host+db+`?sslmode=require`, con el prefijo `jdbc:`)*
+   - `SPRING_DATASOURCE_USERNAME` = `neondb_owner`
    - `SPRING_DATASOURCE_PASSWORD` = `PASSWORD`
 
-> Flyway crea todas las tablas y datos iniciales solo al arrancar el backend.
+> Flyway crea todas las tablas y el admin inicial solo al arrancar el backend.
+> Verás un `WARN` de Flyway diciendo que PostgreSQL 18 es más nuevo de lo probado
+> — **es inofensivo**, las migraciones corren igual.
 
 ---
 
 ## 2. Backend — Render
 
-Opción rápida con el blueprint incluido:
-
-1. Render → **New +** → **Blueprint** → conecta tu repo → detecta `render.yaml`.
-2. Render crea el servicio `manjau-backend` y te pide las variables marcadas
-   `sync:false`. Complétalas:
+1. Render → **New +** → **Blueprint** → conecta el repo → detecta `render.yaml`.
+2. Rellena las variables que pide (`sync:false`):
 
 | Variable | Valor |
 |---|---|
 | `SPRING_DATASOURCE_URL` | el `jdbc:...` de Neon |
-| `SPRING_DATASOURCE_USERNAME` | usuario de Neon |
-| `SPRING_DATASOURCE_PASSWORD` | password de Neon |
+| `SPRING_DATASOURCE_USERNAME` | `neondb_owner` |
+| `SPRING_DATASOURCE_PASSWORD` | la password de Neon *(¡sin espacios!)* |
 | `ADMIN_INITIAL_EMAIL` | `admin@manjau.com` |
 | `ADMIN_INITIAL_PASSWORD` | una contraseña fuerte |
-| `FRONTEND_URL` | (lo pones tras el paso 4) |
-| `CORS_ALLOWED_ORIGINS` | (lo pones tras el paso 4) |
-| `MAIL_*` | (paso 3, opcional) |
+| `MAIL_HOST` | `smtp.gmail.com` |
+| `MAIL_USERNAME` | tu correo Gmail |
+| `MAIL_PASSWORD` | tu **App Password** de Gmail (16 chars, sin espacios) |
+| `MAIL_FROM` | `Manjau <tu-correo@gmail.com>` |
+| `FRONTEND_URL` | `https://<tu-proyecto>.vercel.app` *(el nombre del repo suele ser la URL)* |
+| `CORS_ALLOWED_ORIGINS` | `*` *(acepta cualquier origen; se puede afinar luego)* |
 
-`JWT_ACCESS_SECRET` y `APP_ENCRYPTION_SECRET` los **genera Render** solo.
+- `JWT_ACCESS_SECRET` y `APP_ENCRYPTION_SECRET` → **los genera Render solo**.
+- `MAIL_PORT` (587), `MAIL_SMTP_AUTH` (true), `MAIL_SMTP_STARTTLS` (true) y
+  `APP_STORAGE_LOCATION` (uploads) ya vienen fijos en el `render.yaml`.
 
-3. Deploy. La primera build tarda unos minutos (compila el jar).
-4. Cuando termine, tu backend queda en `https://manjau-backend.onrender.com`.
-   Pruébalo: abre `https://manjau-backend.onrender.com/health` → `{"status":"UP"}`.
+3. **Deploy Blueprint**. La primera build tarda unos minutos (compila el jar).
+4. Al terminar (estado **Live**), abre `https://<tu-backend>.onrender.com/health` → `{"status":"UP"}`.
 
-> **Setup manual (sin blueprint):** New + → **Web Service** → repo → *Root Directory* =
-> `backend`, *Runtime* = Docker, *Health Check Path* = `/health`, plan Free, y añade
-> las variables de la tabla a mano.
+> Render vuelve a desplegar **automáticamente** con cada `git push` a `main`.
 
----
-
-## 3. Correo — Brevo (opcional pero recomendado)
-
-Para que los correos de credenciales lleguen a bandejas reales:
-
-1. Brevo → crea cuenta → **SMTP & API** → **SMTP**. Anota host, puerto, login y una *master password/API key*.
-2. Verifica un remitente (*Senders*) — un correo tuyo real.
-3. En Render añade:
-   - `MAIL_HOST` = `smtp-relay.brevo.com`
-   - `MAIL_PORT` = `587`
-   - `MAIL_USERNAME` = tu login SMTP de Brevo
-   - `MAIL_PASSWORD` = tu master password de Brevo
-   - `MAIL_SMTP_AUTH` = `true`
-   - `MAIL_SMTP_STARTTLS` = `true`
-   - `MAIL_FROM` = el remitente verificado
-
-Para el demo, crea usuarios con **correos reales** que puedas abrir.
+### App Password de Gmail (para el correo)
+1. Requiere **verificación en 2 pasos** activada en tu cuenta Google.
+2. Google Account → **Seguridad** → **Contraseñas de aplicaciones** → crea una → cópiala (16 caracteres).
+3. Úsala como `MAIL_PASSWORD` (quítale los espacios).
 
 ---
 
-## 4. Frontend — Vercel
+## 3. Frontend — Vercel
 
 1. Vercel → **Add New… → Project** → importa el repo.
-2. **Root Directory** = `frontend`. Framework: *Vite* (auto). El `vercel.json`
-   ya configura el build y el enrutado SPA.
-3. En **Environment Variables** añade:
-   - `VITE_API_URL` = `https://manjau-backend.onrender.com/api/v1`
-4. **Deploy**. Obtendrás una URL tipo `https://manjau.vercel.app`.
+2. **Root Directory** → **Edit** → **`frontend`**. ⚠️ (sin esto, el preset queda en "Other" y falla).
+   Al ponerlo, el *Framework Preset* cambia solo a **Vite**.
+3. **Environment Variables**:
+   - `VITE_API_URL` = `https://<tu-backend>.onrender.com/api/v1`
+4. **Deploy** → obtienes `https://<tu-proyecto>.vercel.app`.
+
+> Si la URL de Vercel resulta distinta a la que pusiste en `FRONTEND_URL`,
+> actualiza esa variable en Render (para que los enlaces de los correos apunten bien).
 
 ---
 
-## 5. Conectar CORS y probar
+## 4. Probar en producción
 
-1. Vuelve a Render → variables del backend y pon la URL de Vercel:
-   - `FRONTEND_URL` = `https://manjau.vercel.app`
-   - `CORS_ALLOWED_ORIGINS` = `https://manjau.vercel.app`
-   (puedes poner varias separadas por coma). Guarda → Render redespliega.
-2. Abre la URL de Vercel, inicia sesión con `ADMIN_INITIAL_EMAIL` / `ADMIN_INITIAL_PASSWORD`
-   y prueba el flujo del Community Manager.
+1. Abre la URL de Vercel → inicia sesión con `ADMIN_INITIAL_EMAIL` / `ADMIN_INITIAL_PASSWORD`.
+2. Crea un usuario con un **correo real** y confirma que **llega el correo** por Gmail.
+3. Inicia sesión con ese usuario (cambia la contraseña) y prueba el módulo del Community Manager.
 
 ---
 
-## Trucos para el demo con el cliente
+## Problemas comunes (y su solución)
 
-- **Cold start:** el backend gratis de Render se duerme tras 15 min y tarda
-  ~30–60 s en despertar. **Abre la app 1–2 minutos antes** del demo para calentarla.
-  (Opcional: un ping cada 10 min desde [cron-job.org](https://cron-job.org) a
-  `/health`).
-- **Neon** despierta en ~1 s, no te preocupa.
-- **Imágenes subidas:** en el plan gratis de Render el disco es **efímero** — se
-  borran en cada redeploy/reinicio. Para el demo, **súbelas justo antes** y no
-  redepliegues. Solución definitiva a futuro: integrar **Cloudinary**
-  (`StorageService` ya está aislado para migrar sin tocar el resto).
-- **No subas** `.env` reales; todas las credenciales van como variables en Render/Vercel.
+| Síntoma en los logs | Causa | Solución |
+|---|---|---|
+| `IllegalArgumentException: iteration must be >= 4096` (SCRAM) | El driver JDBC por defecto de Spring Boot es incompatible con la auth de Neon | **Ya resuelto**: el `pom.xml` fija `postgresql` a `42.7.11`. Si reaparece, sube esa versión. |
+| `password authentication failed for user ...` (SQLState `28P01`) | La contraseña quedó mal en Render (espacio/typo al pegar) | Reescribe `SPRING_DATASOURCE_PASSWORD` **exacta**, sin espacios ni comillas. |
+| `Flyway ... PostgreSQL 18.4 is newer ...` (WARN) | Neon usa PG18; Flyway prueba hasta PG16 | **Inofensivo**, ignóralo. |
+| `No open ports detected, continuing to scan...` | La app aún está arrancando | Normal; desaparece cuando la app toma el puerto `$PORT`. |
+| Se crea el usuario pero **no llega el correo** | Google a veces bloquea SMTP desde IPs de nube | Revisa el `WARN "No se pudo enviar el correo..."` en los logs de Render. Aprueba el acceso desde la alerta de Google, o cambia a **Brevo** (`smtp-relay.brevo.com`, sin bloqueos de nube). |
+
+---
+
+## Trucos para el demo
+
+- **Cold start:** el backend gratis de Render **se duerme tras 15 min** y el primer
+  ingreso tarda ~30–60 s. **Abre la app 1–2 min antes** del demo para calentarla
+  (o un ping periódico a `/health` desde [cron-job.org](https://cron-job.org)).
+- **Neon** despierta en ~1 s, no molesta.
+- **Imágenes subidas:** el disco de Render gratis es **efímero** — se borran en cada
+  reinicio/redeploy. Súbelas justo antes del demo. Solución definitiva: **Cloudinary**
+  (`StorageService` ya está aislado para migrarlo sin tocar el resto).
+- **Nunca** subas `.env` reales; las credenciales van como variables en Render/Vercel.
+
+---
+
+## Alternativa de correo — Brevo (si Gmail se bloquea)
+
+1. Brevo → **SMTP & API** → **SMTP**: anota host, login y una *master password*.
+2. Verifica un remitente (*Senders*).
+3. En Render cambia: `MAIL_HOST=smtp-relay.brevo.com`, `MAIL_USERNAME`=login de Brevo,
+   `MAIL_PASSWORD`=master password, `MAIL_FROM`=remitente verificado.
