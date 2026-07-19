@@ -28,6 +28,8 @@ import java.util.UUID;
 @Service
 public class UserService {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UserService.class);
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
@@ -121,7 +123,7 @@ public class UserService {
         try {
             emailService.sendCredentials(user.getFullName(), user.getInstitutionalEmail(), tempPassword, setupLink, pst.getExpiresAt());
         } catch (Exception e) {
-            // Log but don't fail
+            log.warn("No se pudo enviar el correo de credenciales a {}: {}", user.getInstitutionalEmail(), e.getMessage());
         }
 
         return userResponse;
@@ -202,7 +204,7 @@ public class UserService {
         try {
             emailService.sendCredentials(user.getFullName(), user.getInstitutionalEmail(), tempPassword, setupLink, pst.getExpiresAt());
         } catch (Exception e) {
-            // Log but don't fail
+            log.warn("No se pudo enviar el correo de credenciales a {}: {}", user.getInstitutionalEmail(), e.getMessage());
         }
     }
 
