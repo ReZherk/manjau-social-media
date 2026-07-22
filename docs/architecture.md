@@ -52,7 +52,7 @@ El backend también se comunica con:
 ## Seguridad
 
 - Access token JWT (15 min) enviado en header Authorization
-- Refresh token en cookie HttpOnly (7 días, rotativo)
+- Refresh token rotativo (7 días), almacenado por la sesión del cliente
 - Contraseñas hasheadas con BCrypt
 - Credenciales de redes sociales cifradas con AES-GCM (reversibles, revelables por permiso)
 - Autorización a nivel de método con @PreAuthorize
@@ -96,3 +96,14 @@ Las tablas administrativas existentes (`users`, `roles`, `permissions`,
 `role_permissions`) ya cumplían 3FN. `audit_logs` mantiene deliberadamente
 copias desnormalizadas (`actor_name`, `actor_role`) por ser un registro
 histórico inmutable (snapshot al momento del evento).
+
+## Módulo del Analista de Marketing
+
+La migración `V7__create_publication_metrics.sql` agrega `publication_metrics`.
+Cada registro pertenece a una publicación realizada y una cuenta social, con
+una restricción única sobre ambas claves. Esto permite almacenar resultados
+independientes por plataforma sin duplicar datos de publicaciones o catálogos.
+
+El dashboard, los KPI y los reportes se calculan desde estas métricas. El
+frontend consume `/metrics`, `/analyst/dashboard` y `/reports/performance`
+siguiendo el mismo patrón API → hook de TanStack Query → pantalla.

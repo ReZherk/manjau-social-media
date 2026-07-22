@@ -4,6 +4,10 @@ import com.manjau.socialmedia.audit.repository.AuditLogRepository;
 import com.manjau.socialmedia.dashboard.dto.DashboardSummaryResponse;
 import com.manjau.socialmedia.dashboard.dto.RecentActivityResponse;
 import com.manjau.socialmedia.user.repository.UserRepository;
+import com.manjau.socialmedia.publication.repository.PublicationRepository;
+import com.manjau.socialmedia.reference.repository.PlatformRepository;
+import com.manjau.socialmedia.role.repository.RoleRepository;
+import com.manjau.socialmedia.socialaccount.repository.SocialAccountRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -18,38 +22,52 @@ public class DashboardService {
 
     private final UserRepository userRepository;
     private final AuditLogRepository auditLogRepository;
+    private final PublicationRepository publicationRepository;
+    private final SocialAccountRepository socialAccountRepository;
+    private final RoleRepository roleRepository;
+    private final PlatformRepository platformRepository;
 
-    public DashboardService(UserRepository userRepository, AuditLogRepository auditLogRepository) {
+    public DashboardService(UserRepository userRepository, AuditLogRepository auditLogRepository,
+                            PublicationRepository publicationRepository, SocialAccountRepository socialAccountRepository,
+                            RoleRepository roleRepository, PlatformRepository platformRepository) {
         this.userRepository = userRepository;
         this.auditLogRepository = auditLogRepository;
+        this.publicationRepository = publicationRepository;
+        this.socialAccountRepository = socialAccountRepository;
+        this.roleRepository = roleRepository;
+        this.platformRepository = platformRepository;
     }
 
     public DashboardSummaryResponse getSummary() {
         DashboardSummaryResponse response = new DashboardSummaryResponse();
 
-        response.setActiveUsers(userRepository.count());
-        response.setConnectedSocialNetworks(3);
-        response.setPublicationsThisMonth(48);
-        response.setActivitiesToday(auditLogRepository.count());
+        ZoneId zone = ZoneId.of("America/Lima");
+        LocalDate today = LocalDate.now(zone);
+        Instant todayStart = today.atStartOfDay(zone).toInstant();
+        Instant monthStart = today.withDayOfMonth(1).atStartOfDay(zone).toInstant();
+        Instant nextMonthStart = today.plusMonths(1).withDayOfMonth(1).atStartOfDay(zone).toInstant();
+
+        response.setActiveUsers(userRepository.countByStatus("ACTIVE"));
+        response.setConnectedSocialNetworks(socialAccountRepository.countByStatus("ACTIVE"));
+        response.setPublicationsThisMonth(publicationRepository.countByStatusAndPublishedAtGreaterThanEqualAndPublishedAtLessThan(
+                "PUBLISHED", monthStart, nextMonthStart));
+        response.setActivitiesToday(auditLogRepository.countByOccurredAtGreaterThanEqual(todayStart));
 
         // Users by role
-        List<DashboardSummaryResponse.UsersByRole> usersByRole = List.of(
-                createUsersByRole("ADMINISTRATOR", "Administradores", 1),
-                createUsersByRole("COMMUNITY_MANAGER", "Community Managers", 2),
-                createUsersByRole("MARKETING_ANALYST", "Analistas de Marketing", 2)
-        );
+        List<DashboardSummaryResponse.UsersByRole> usersByRole = roleRepository.findAll().stream()
+                .map(role -> createUsersByRole(role.getCode(), role.getName(), userRepository.countByRoleCode(role.getCode())))
+                .toList();
         response.setUsersByRole(usersByRole);
 
         // Platforms
-        List<DashboardSummaryResponse.PlatformInfo> platforms = List.of(
-                createPlatform("Instagram", true),
-                createPlatform("Facebook", true),
-                createPlatform("TikTok", true)
-        );
+        List<DashboardSummaryResponse.PlatformInfo> platforms = platformRepository.findAll().stream()
+                .map(platform -> createPlatform(platform.getName(),
+                        socialAccountRepository.existsByPlatformIdAndStatus(platform.getId(), "ACTIVE")))
+                .toList();
         response.setPlatforms(platforms);
 
         // Period label
-        LocalDate now = LocalDate.now();
+        LocalDate now = today;
         String periodLabel = now.format(DateTimeFormatter.ofPattern("MMMM yyyy", new Locale("es", "ES")));
         response.setPeriodLabel(periodLabel.substring(0, 1).toUpperCase() + periodLabel.substring(1));
 

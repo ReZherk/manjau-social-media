@@ -1,15 +1,33 @@
+import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { BarChart3, Download, Eraser, Eye, FileBarChart, Heart, MessageCircle, Share2, TrendingUp, DollarSign } from 'lucide-react';
 import { PageHeader } from '@/shared/components/PageHeader';
-import { FileBarChart } from 'lucide-react';
+import { metricsApi } from '@/modules/metrics/api/metricsApi';
+import type { PerformanceReport } from '@/modules/metrics/types/metricTypes';
+import { useToast } from '@/shared/components/ToastProvider';
+import { getErrorMessage } from '@/shared/lib/utils';
+import { usePlatforms } from '@/shared/hooks/useReference';
 
-export default function ReportsPage() {
-  return (
-    <div>
-      <PageHeader title="Reportes" subtitle="Genera reportes PDF del sistema" />
-      <div className="card p-12 flex flex-col items-center justify-center text-text-muted">
-        <FileBarChart className="w-12 h-12 mb-3" />
-        <p className="font-medium">Módulo de Reportes</p>
-        <p className="text-sm">Esta funcionalidad estará disponible próximamente.</p>
-      </div>
-    </div>
-  );
-}
+const platformTone=(code:string)=>code==='INSTAGRAM'?'border-pink/40 text-pink bg-pink-soft/40':code==='FACEBOOK'?'border-blue/40 text-blue bg-blue-soft/40':'border-peach/50 text-peach bg-peach-soft/40';
+export default function ReportsPage(){const [from,setFrom]=useState('');const [to,setTo]=useState('');const [selected,setSelected]=useState<string[]>([]);const [report,setReport]=useState<PerformanceReport|null>(null);const {showToast}=useToast();const platformQuery=usePlatforms();const platforms=platformQuery.data?.data??[];
+ const mutation=useMutation({mutationFn:()=>metricsApi.report(from,to,selected),onSuccess:r=>setReport(r.data),onError:e=>showToast({title:'No se pudo generar el reporte',description:getErrorMessage(e),variant:'error'})});
+ const generate=()=>{if(!from||!to||selected.length===0){showToast({title:'Completa los filtros',description:'Selecciona el periodo y al menos una plataforma.',variant:'error'});return}mutation.mutate()};
+ const download=()=>{if(!report)return;const rows:(string|number)[][]=[['Plataforma','Publicaciones','Reacciones','Alcance','Guardados','Compartidos','Comentarios','Engagement %','Alcance promedio','Costo por interacci\u00F3n'],...report.platforms.map(p=>[p.name,p.publications,p.reactions,p.reach,p.saves,p.shares,p.comments,p.engagementRate,Math.round(p.avgReach),Number(p.costPerInteraction).toFixed(2)])];const csv=rows.map(r=>r.join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download=`reporte-manjau-${from}-${to}.csv`;a.click();URL.revokeObjectURL(a.href)};
+ return <div><PageHeader title="Reportes" subtitle="Analiza el desempeño de las publicaciones de Manjau por periodo y plataforma"/>
+      <section className="card p-6 mb-6"><div className="grid lg:grid-cols-[1fr_1fr_2fr] gap-5 items-end"><label className="text-sm text-text-muted">Fecha inicial<input type="date" className="input-field mt-2" value={from} onChange={e=>setFrom(e.target.value)}/></label><label className="text-sm text-text-muted">Fecha final<input type="date" className="input-field mt-2" value={to} onChange={e=>setTo(e.target.value)}/></label><div><span className="block text-sm text-text-muted mb-2">Plataformas</span><div className="grid sm:grid-cols-3 gap-3">{platforms.map(({code,name})=><label key={code} className={`h-11 px-4 rounded-xl border flex items-center justify-center gap-2 cursor-pointer ${platformTone(code)}`}><input type="checkbox" checked={selected.includes(code)} onChange={()=>setSelected(v=>v.includes(code)?v.filter(x=>x!==code):[...v,code])}/><span className="text-sm font-medium">{name}</span></label>)}</div></div></div>
+ <div className="flex flex-wrap justify-end gap-3 mt-6"><button className="btn-secondary" onClick={()=>{setFrom('');setTo('');setSelected([]);setReport(null)}}><Eraser className="w-4 h-4"/>Limpiar</button><button className="btn-primary" onClick={generate} disabled={mutation.isPending}><FileBarChart className="w-4 h-4"/>{mutation.isPending?'Generando…':'Generar reporte'}</button></div></section>
+ {!report?<section className="card min-h-[300px] grid place-items-center text-center p-8"><div><span className="w-16 h-16 mx-auto rounded-2xl bg-pink-soft text-pink grid place-items-center"><FileBarChart className="w-8 h-8"/></span><h2 className="text-xl mt-5">Tu reporte aparecerá aquí</h2><p className="text-sm text-text-muted mt-2">Selecciona un periodo y las plataformas que quieres comparar.</p></div></section>:<section className="space-y-5">
+ <div className="grid sm:grid-cols-3 gap-4">{[
+   {Icon:TrendingUp,value:`${report.engagementRate.toFixed(1)}%`,label:'Tasa de engagement',tone:'bg-mint-soft text-mint'},
+   {Icon:Eye,value:Math.round(report.avgReach).toLocaleString('es-PE'),label:'Alcance promedio',tone:'bg-blue-soft text-blue'},
+   {Icon:DollarSign,value:`S/ ${Number(report.costPerInteraction).toFixed(2)}`,label:'Costo por interacción',tone:'bg-peach-soft text-peach'},
+ ].map(({Icon,value,label,tone})=><article key={label} className="card p-5 flex items-center gap-4"><span className={`w-11 h-11 rounded-2xl grid place-items-center ${tone}`}><Icon className="w-5 h-5"/></span><div><strong className="block text-2xl">{value}</strong><span className="text-xs text-text-muted">{label}</span></div></article>)}</div>
+ <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">{[
+   {Icon:BarChart3,value:report.publications,label:'Publicaciones'}, {Icon:Heart,value:report.reactions,label:'Reacciones'},
+   {Icon:Eye,value:report.reach,label:'Alcance'}, {Icon:Share2,value:report.shares,label:'Compartidos'},
+   {Icon:MessageCircle,value:report.comments,label:'Comentarios'},
+ ].map(({Icon,value,label})=><article key={label} className="card p-5"><Icon className="w-5 h-5 text-pink"/><strong className="block text-2xl mt-3">{value.toLocaleString('es-PE')}</strong><span className="text-xs text-text-muted">{label}</span></article>)}</div>
+ <section className="card overflow-hidden"><div className="p-5 border-b border-border flex justify-between items-center"><div><h2 className="text-lg">Resultados por plataforma</h2><p className="text-xs text-text-muted mt-1">{new Date(from+'T00:00:00').toLocaleDateString('es-PE')} – {new Date(to+'T00:00:00').toLocaleDateString('es-PE')}</p></div><button className="btn-secondary" onClick={download}><Download className="w-4 h-4"/>Descargar CSV</button></div><div className="overflow-x-auto"><table className="w-full text-sm"><thead className="bg-pink-soft/40 text-text-muted"><tr>{['Plataforma','Pub.','Reacc.','Alcance','Guard.','Comp.','Coment.','Engag.','Alc. prom.','Costo/int.'].map(h=><th className="text-left px-4 py-3 font-medium" key={h}>{h}</th>)}</tr></thead><tbody>{report.platforms.map(p=><tr key={p.code} className="border-t border-border"><td className="px-4 py-4 font-semibold">{p.name}</td>{[p.publications,p.reactions,p.reach,p.saves,p.shares,p.comments].map((v,i)=><td key={i} className="px-4 py-4">{v.toLocaleString('es-PE')}</td>)}<td className="px-4 py-4">{p.engagementRate.toFixed(1)}%</td><td className="px-4 py-4">{Math.round(p.avgReach).toLocaleString('es-PE')}</td><td className="px-4 py-4">S/ {Number(p.costPerInteraction).toFixed(2)}</td></tr>)}</tbody></table></div></section>
+ <section className="card p-5"><h2 className="text-lg mb-4">Desglose por tipo de contenido</h2><div className="space-y-5">{report.platforms.map(p=><div key={p.code}><h3 className="text-sm font-semibold mb-2">{p.name}</h3><div className="overflow-x-auto"><table className="w-full text-sm"><thead className="text-text-muted"><tr>{['Tipo de contenido','Pub.','Reacc.','Alcance','Guard.','Comp.','Coment.'].map(h=><th className="text-left px-3 py-2 font-medium" key={h}>{h}</th>)}</tr></thead><tbody>{p.contentTypes.map(c=><tr key={c.contentType} className="border-t border-border"><td className="px-3 py-2">{c.contentType}</td>{[c.publications,c.reactions,c.reach,c.saves,c.shares,c.comments].map((v,i)=><td key={i} className="px-3 py-2">{v.toLocaleString('es-PE')}</td>)}</tr>)}</tbody></table></div></div>)}</div></section>
+ </section>}
+ </div>}

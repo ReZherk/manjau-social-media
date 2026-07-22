@@ -30,25 +30,25 @@ export function AppSidebar({ open, onClose }: AppSidebarProps) {
       >
         <div className="flex flex-col min-h-0 flex-1">
           {/* Logo */}
-          <div className="flex items-center gap-2.5 px-4 pt-5 pb-4">
-            <div className="w-9 h-9 rounded-xl bg-lavender text-white grid place-items-center">
+          <div className="flex items-center gap-3 px-5 pt-5 pb-4">
+            <div className="w-10 h-10 rounded-full bg-pink text-white grid place-items-center shadow-soft">
               <CakeSlice className="w-5 h-5" />
             </div>
             <div>
-              <p className="font-serif text-[15px] leading-tight text-text">MANJAU</p>
-              <p className="text-[10px] text-text-muted">Redes Sociales</p>
+              <p className="font-serif text-base leading-tight text-text">MANJAU</p>
+              <p className="text-[10px] text-text-muted">Sist. Gestión Redes Sociales</p>
             </div>
           </div>
 
           {/* User card */}
           {user && (
-            <div className="mx-3 mb-3 flex items-center gap-3 p-3 rounded-2xl bg-lavender-soft/60">
-              <div className="w-9 h-9 rounded-full bg-lavender text-white grid place-items-center text-[11px] font-bold">
+            <div className="mx-3 mb-4 flex items-center gap-3 p-3 rounded-2xl bg-white shadow-soft">
+              <div className="w-10 h-10 rounded-full bg-blue text-white grid place-items-center text-xs font-bold">
                 {user.initials}
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-semibold text-text truncate">{user.fullName}</p>
-                <p className="text-[10px] text-text-muted truncate">{user.role.name}</p>
+                <p className="text-sm font-semibold text-text truncate">{user.fullName}</p>
+                <p className="text-[11px] text-text-muted truncate">{user.role.name}</p>
               </div>
             </div>
           )}
@@ -72,10 +72,10 @@ export function AppSidebar({ open, onClose }: AppSidebarProps) {
                         onClick={onClose}
                         className={({ isActive }) =>
                           cn(
-                            'grid grid-cols-[22px_1fr_16px] items-center gap-1.5 px-3 min-h-[40px] rounded-xl text-xs transition-colors',
+                            'grid grid-cols-[24px_1fr_16px] items-center gap-2 px-3 min-h-[44px] rounded-xl text-sm transition-colors',
                             isActive
-                              ? 'text-lavender bg-[#f2e8f8] font-medium'
-                              : 'text-[#655b63] hover:text-lavender hover:bg-[#f2e8f8]/60',
+                              ? 'text-blue bg-white font-medium shadow-soft'
+                              : 'text-[#655b63] hover:text-blue hover:bg-white/70',
                           )
                         }
                       >

@@ -20,12 +20,7 @@ import { SocialAccountCard } from '../components/SocialAccountCard';
 import { SocialAccountFormDialog } from '../components/SocialAccountFormDialog';
 import type { SocialAccountResponse, SocialAccountFilters } from '../types/socialAccountTypes';
 import type { EditSocialAccountFormData } from '../schemas/socialAccountSchemas';
-
-const PLATFORM_OPTIONS = [
-  { value: 'INSTAGRAM', label: 'Instagram' },
-  { value: 'FACEBOOK', label: 'Facebook' },
-  { value: 'TIKTOK', label: 'TikTok' },
-];
+import { usePlatforms } from '@/shared/hooks/useReference';
 
 const STATUS_OPTIONS = [
   { value: 'ACTIVE', label: 'Activa' },
@@ -36,6 +31,7 @@ export default function SocialAccountsPage() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const { hasPermission } = useAuth();
+  const platformOptions = (usePlatforms().data?.data ?? []).map((p) => ({ value: p.code, label: p.name }));
 
   const [filters, setFilters] = useState<SocialAccountFilters>({ search: '', platform: '', status: '', page: 0, size: 12 });
   const [formOpen, setFormOpen] = useState(false);
@@ -121,7 +117,7 @@ export default function SocialAccountsPage() {
             placeholder="Buscar por nombre de cuenta..."
           />
         </div>
-        <FilterSelect value={filters.platform} onChange={(v) => setFilters((f) => ({ ...f, platform: v, page: 0 }))} options={PLATFORM_OPTIONS} placeholder="Plataforma" />
+        <FilterSelect value={filters.platform} onChange={(v) => setFilters((f) => ({ ...f, platform: v, page: 0 }))} options={platformOptions} placeholder="Plataforma" />
         <FilterSelect value={filters.status} onChange={(v) => setFilters((f) => ({ ...f, status: v, page: 0 }))} options={STATUS_OPTIONS} placeholder="Estado" />
       </div>
 

@@ -10,6 +10,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.UUID;
 
 public interface SocialAccountRepository extends JpaRepository<SocialAccount, UUID> {
+    long countByStatus(String status);
+    boolean existsByPlatformIdAndStatus(UUID platformId, String status);
 
     @Query("SELECT sa FROM SocialAccount sa WHERE " +
            "(:search IS NULL OR LOWER(sa.accountName) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%'))) " +

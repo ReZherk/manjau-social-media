@@ -1,15 +1,12 @@
+import { useQuery } from '@tanstack/react-query';
+import { Eye, Heart, MessageCircle, Share2, Target, TrendingUp, DollarSign } from 'lucide-react';
 import { PageHeader } from '@/shared/components/PageHeader';
-import { TrendingUp } from 'lucide-react';
+import { LoadingSkeleton } from '@/shared/components/LoadingSkeleton';
+import { ErrorState } from '@/shared/components/ErrorState';
+import { metricsApi } from '@/modules/metrics/api/metricsApi';
 
-export default function KpisPage() {
-  return (
-    <div>
-      <PageHeader title="Indicadores KPI" subtitle="Consulta los indicadores clave de rendimiento" />
-      <div className="card p-12 flex flex-col items-center justify-center text-text-muted">
-        <TrendingUp className="w-12 h-12 mb-3" />
-        <p className="font-medium">Módulo de KPI</p>
-        <p className="text-sm">Esta funcionalidad estará disponible próximamente.</p>
-      </div>
-    </div>
-  );
-}
+export default function KpisPage(){const now=new Date();const from=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;const to=new Date(now.getFullYear(),now.getMonth()+1,0).toISOString().slice(0,10);
+ const q=useQuery({queryKey:['kpis',from,to],queryFn:async()=>(await metricsApi.report(from,to,[])).data});const r=q.data;
+ const cards=r?[{label:'Tasa de engagement',value:`${r.engagementRate.toFixed(1)}%`,Icon:TrendingUp,tone:'bg-mint-soft text-mint'},{label:'Alcance promedio',value:Math.round(r.avgReach).toLocaleString('es-PE'),Icon:Eye,tone:'bg-blue-soft text-blue'},{label:'Costo por interacción',value:`S/ ${Number(r.costPerInteraction).toFixed(2)}`,Icon:DollarSign,tone:'bg-peach-soft text-peach'},{label:'Alcance total',value:r.reach,Icon:Target,tone:'bg-lavender-soft text-lavender'},{label:'Interacciones',value:r.reactions+r.comments+r.shares+r.saves,Icon:Heart,tone:'bg-pink-soft text-pink'},{label:'Publicaciones medidas',value:r.publications,Icon:Target,tone:'bg-pink-soft text-pink'}]:[];
+ const interactions=[{Icon:Heart,value:r?.reactions??0,label:'Reacciones'},{Icon:MessageCircle,value:r?.comments??0,label:'Comentarios'},{Icon:Share2,value:r?.shares??0,label:'Compartidos'},{Icon:Target,value:r?.saves??0,label:'Guardados'}];
+ return <div><PageHeader title="Indicadores KPI" subtitle={`Rendimiento consolidado de ${now.toLocaleDateString('es-PE',{month:'long',year:'numeric'})}`}/>{q.isLoading?<LoadingSkeleton count={4} className="h-32"/>:q.isError?<ErrorState onRetry={()=>q.refetch()}/>:<><div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">{cards.map(({label,value,Icon,tone})=><article className="card p-6" key={label}><span className={`w-12 h-12 rounded-2xl grid place-items-center ${tone}`}><Icon className="w-5 h-5"/></span><strong className="block text-3xl mt-5">{typeof value==='number'?value.toLocaleString('es-PE'):value}</strong><span className="text-sm text-text-muted mt-1 block">{label}</span></article>)}</div><section className="card p-6"><h2 className="text-lg mb-5">Distribución de interacciones</h2><div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">{interactions.map(({Icon,value,label})=><div key={label} className="rounded-2xl bg-pink-soft/40 p-5 flex items-center gap-4"><Icon className="w-5 h-5 text-pink"/><div><strong className="block text-xl">{value.toLocaleString('es-PE')}</strong><span className="text-xs text-text-muted">{label}</span></div></div>)}</div></section></>}</div>}

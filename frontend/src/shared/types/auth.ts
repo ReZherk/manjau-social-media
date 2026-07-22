@@ -15,6 +15,7 @@ export interface User {
 
 export interface LoginResponse {
   accessToken: string;
+  refreshToken: string;
   expiresIn: number;
   mustChangePassword: boolean;
   user: User;

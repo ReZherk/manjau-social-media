@@ -42,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const loginData = response.data;
       loginData.user.initials = getInitials(loginData.user.fullName);
       sessionStorage.setItem('accessToken', loginData.accessToken);
+      sessionStorage.setItem('refreshToken', loginData.refreshToken);
       sessionStorage.setItem('user', JSON.stringify(loginData.user));
       setUser(loginData.user);
       return loginData;
@@ -52,11 +53,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await apiClient.post('/auth/logout');
+      await apiClient.post('/auth/logout', { refreshToken: sessionStorage.getItem('refreshToken') });
     } catch {
       // ignore
     }
     sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('refreshToken');
     sessionStorage.removeItem('user');
     setUser(null);
   }, []);
@@ -69,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(response.data);
     } catch {
       sessionStorage.removeItem('accessToken');
+      sessionStorage.removeItem('refreshToken');
       sessionStorage.removeItem('user');
       setUser(null);
     }

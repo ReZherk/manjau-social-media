@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 public interface AuditLogRepository extends JpaRepository<AuditLog, UUID> {
+    long countByOccurredAtGreaterThanEqual(Instant from);
     @Query("SELECT a FROM AuditLog a WHERE " +
            "(:search IS NULL OR LOWER(a.actorName) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')) " +
            "OR LOWER(a.action) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%'))) " +

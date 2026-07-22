@@ -20,6 +20,7 @@ export const MENU_SECTIONS = ['GENERAL', 'ADMINISTRACIÓN', 'PUBLICACIONES', 'MA
 export const MENU_ITEMS: MenuItem[] = [
   { label: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard, requiredPermission: PERMISSIONS.ADMIN_DASHBOARD_VIEW, section: 'GENERAL' },
   { label: 'Mi Panel', path: '/dashboard', icon: Home, requiredPermission: PERMISSIONS.PUBLICATION_VIEW, section: 'GENERAL', hideForPermission: PERMISSIONS.ADMIN_DASHBOARD_VIEW },
+  { label: 'Dashboard', path: '/analyst/dashboard', icon: LayoutDashboard, requiredPermission: PERMISSIONS.METRIC_VIEW, section: 'GENERAL', hideForPermission: PERMISSIONS.ADMIN_DASHBOARD_VIEW },
 
   { label: 'Usuarios', path: '/admin/users', icon: Users, requiredPermission: PERMISSIONS.USER_VIEW, section: 'ADMINISTRACIÓN' },
   { label: 'Auditoría', path: '/admin/audit', icon: Shield, requiredPermission: PERMISSIONS.AUDIT_VIEW, section: 'ADMINISTRACIÓN' },

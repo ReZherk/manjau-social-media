@@ -5,18 +5,21 @@ import java.util.UUID;
 
 public class LoginResponse {
     private String accessToken;
+    private String refreshToken;
     private long expiresIn;
     private boolean mustChangePassword;
     private UserInfo user;
 
-    public LoginResponse(String accessToken, long expiresIn, boolean mustChangePassword, UserInfo user) {
+    public LoginResponse(String accessToken, String refreshToken, long expiresIn, boolean mustChangePassword, UserInfo user) {
         this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
         this.expiresIn = expiresIn;
         this.mustChangePassword = mustChangePassword;
         this.user = user;
     }
 
     public String getAccessToken() { return accessToken; }
+    public String getRefreshToken() { return refreshToken; }
     public long getExpiresIn() { return expiresIn; }
     public boolean isMustChangePassword() { return mustChangePassword; }
     public UserInfo getUser() { return user; }

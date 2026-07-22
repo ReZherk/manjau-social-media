@@ -9,6 +9,7 @@ const LoginPage = lazy(() => import('@/modules/auth/pages/LoginPage'));
 const ChangePasswordPage = lazy(() => import('@/modules/auth/pages/ChangePasswordPage'));
 const DashboardPage = lazy(() => import('@/modules/dashboard/pages/DashboardPage'));
 const CommunityDashboardPage = lazy(() => import('@/modules/dashboard/pages/CommunityDashboardPage'));
+const AnalystDashboardPage = lazy(() => import('@/modules/dashboard/pages/AnalystDashboardPage'));
 const UsersPage = lazy(() => import('@/modules/users/pages/UsersPage'));
 const AuditPage = lazy(() => import('@/modules/audit/pages/AuditPage'));
 const SocialAccountsPage = lazy(() => import('@/modules/social-accounts/pages/SocialAccountsPage'));
@@ -44,6 +45,7 @@ export function AppRouter() {
             <Route element={<AppLayout />}>
               <Route path="/admin/dashboard" element={<DashboardPage />} />
               <Route path="/dashboard" element={<CommunityDashboardPage />} />
+              <Route path="/analyst/dashboard" element={<AnalystDashboardPage />} />
               <Route path="/admin/users" element={<UsersPage />} />
               <Route path="/admin/audit" element={<AuditPage />} />
               <Route path="/social-accounts" element={<SocialAccountsPage />} />

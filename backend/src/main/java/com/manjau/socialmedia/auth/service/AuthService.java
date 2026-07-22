@@ -88,11 +88,14 @@ public class AuthService {
                 user.getInitials(), roleInfo, permissions, user.isMustChangePassword()
         );
 
-        return new LoginResponse(accessToken, accessExpirationMinutes * 60, user.isMustChangePassword(), userInfo);
+        return new LoginResponse(accessToken, refreshTokenStr, accessExpirationMinutes * 60, user.isMustChangePassword(), userInfo);
     }
 
     @Transactional
     public LoginResponse refresh(String refreshTokenStr) {
+        if (refreshTokenStr == null || refreshTokenStr.isBlank()) {
+            throw new IllegalArgumentException("Token de renovación requerido");
+        }
         var refreshTokens = refreshTokenRepository.findAll();
         RefreshToken storedToken = null;
         for (var rt : refreshTokens) {
@@ -129,11 +132,12 @@ public class AuthService {
                 user.getId(), user.getFullName(), user.getInstitutionalEmail(),
                 user.getInitials(), roleInfo, permissions, user.isMustChangePassword()
         );
-        return new LoginResponse(newAccessToken, accessExpirationMinutes * 60, user.isMustChangePassword(), userInfo);
+        return new LoginResponse(newAccessToken, newRefreshToken, accessExpirationMinutes * 60, user.isMustChangePassword(), userInfo);
     }
 
     @Transactional
     public void logout(String refreshTokenStr) {
+        if (refreshTokenStr == null || refreshTokenStr.isBlank()) return;
         var refreshTokens = refreshTokenRepository.findAll();
         for (var rt : refreshTokens) {
             if (passwordEncoder.matches(refreshTokenStr, rt.getTokenHash())) {

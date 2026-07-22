@@ -15,6 +15,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByDni(String dni);
     boolean existsByInstitutionalEmail(String email);
     boolean existsByDni(String dni);
+    long countByStatus(String status);
+    long countByRoleCode(String roleCode);
 
     @Query("SELECT u FROM User u WHERE " +
            "(:search IS NULL OR LOWER(u.firstName) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')) " +

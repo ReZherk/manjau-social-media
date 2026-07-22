@@ -1,4 +1,4 @@
-import { Menu, Bell } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { useAuth } from '@/app/providers/AuthProvider';
 
 interface AppTopbarProps {
@@ -9,28 +9,21 @@ export function AppTopbar({ onMenuClick }: AppTopbarProps) {
   const { user } = useAuth();
 
   return (
-    <header className="sticky top-0 z-20 h-topbar bg-surface/95 backdrop-blur border-b border-border px-4 sm:px-7 flex items-center gap-3">
+    <header className="sticky top-0 z-20 h-topbar bg-pink text-white px-4 sm:px-8 flex items-center gap-3 shadow-soft">
       <button
-        className="lg:hidden p-2 -ml-1 hover:bg-soft-pink rounded-lg text-text-muted"
+        className="lg:hidden p-2 -ml-1 hover:bg-white/15 rounded-lg text-white"
         onClick={onMenuClick}
         aria-label="Abrir menú"
       >
         <Menu className="w-5 h-5" />
       </button>
 
-      <span className="text-[10px] text-lavender bg-lavender-soft px-3 py-1.5 rounded-full">
-        {user?.role.name ?? 'Usuario'}
-      </span>
+      <div><strong className="block text-sm uppercase tracking-wide">{user?.role.name ?? 'MANJAU'}</strong><span className="text-xs text-white/80">Sistema de gestión de redes sociales</span></div>
 
       <div className="flex-1" />
 
-      <button className="relative p-2 text-text-muted hover:text-text" aria-label="Notificaciones">
-        <Bell className="w-5 h-5" />
-        <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-pink" />
-      </button>
-
       {user && (
-        <div className="w-8 h-8 rounded-full bg-lavender text-white grid place-items-center text-[11px] font-bold">
+        <div className="w-10 h-10 rounded-full bg-white text-blue grid place-items-center text-xs font-bold">
           {user.initials}
         </div>
       )}

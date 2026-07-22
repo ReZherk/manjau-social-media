@@ -98,8 +98,9 @@ backend/src/main/java/com/manjau/socialmedia/
 └── shared/            # DTOs, excepciones, auditoría, cifrado, health
 ```
 
-> Los módulos `metric`, `kpi` y `report` (rol Analista) son la **fase 2** y aún no
-> están implementados en el backend.
+Los módulos del Analista de Marketing incluyen dashboard, consulta de
+credenciales, registro/edición de métricas por plataforma, KPI y reportes por
+periodo con exportación CSV.
 
 ## Requisitos Previos
 

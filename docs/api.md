@@ -17,6 +17,7 @@ Content-Type: application/json
 Response 200:
 {
   "accessToken": "jwt...",
+  "refreshToken": "jwt...",
   "expiresIn": 900,
   "mustChangePassword": false,
   "user": {
@@ -213,6 +214,26 @@ POST /media   (multipart/form-data, file=<archivo>)
 
 Nota: al crear una publicación se puede enviar `"draft": true` para guardarla
 como borrador (estado `DRAFT`); los borradores aparecen junto a las programadas.
+
+## Analista de Marketing
+
+### Dashboard
+`GET /analyst/dashboard` requiere `METRIC_VIEW` y devuelve cuentas disponibles,
+publicaciones realizadas y métricas registradas o pendientes.
+
+### Métricas
+| Método | Ruta | Permiso |
+|--------|------|---------|
+| GET | `/metrics/publications?search=&from=&to=&status=&platform=&page=&size=` | `METRIC_VIEW` |
+| POST | `/metrics` | `METRIC_CREATE` |
+| PUT | `/metrics/{id}` | `METRIC_CREATE` |
+
+Las métricas se registran por la combinación única publicación realizada + cuenta social.
+
+### KPI y reportes
+`GET /reports/performance?from=<ISO>&to=<ISO>&platforms=INSTAGRAM` requiere
+`REPORT_VIEW`. Devuelve totales y desglose por plataforma para los indicadores
+KPI, la vista de reporte y la exportación CSV.
 
 ## Errores
 

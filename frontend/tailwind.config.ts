@@ -6,9 +6,9 @@ const config: Config = {
     extend: {
       colors: {
         // Neutrals (prototype palette)
-        background: '#FCF8F6',
+        background: '#FFFDFC',
         surface: '#FFFFFF',
-        sidebar: '#FFF7FA',
+        sidebar: '#FFF4F7',
         'input-bg': '#F8F0F7',
         border: '#F0E3E8',
         overlay: 'rgba(63, 49, 57, 0.32)',
@@ -18,12 +18,12 @@ const config: Config = {
         },
         // Accent scale
         lavender: {
-          DEFAULT: '#9D79D0',
-          soft: '#F1E7FB',
+          DEFAULT: '#E7798C',
+          soft: '#FCECEF',
         },
         pink: {
-          DEFAULT: '#D45A88',
-          soft: '#FDE7EF',
+          DEFAULT: '#E7798C',
+          soft: '#FCECEF',
         },
         mint: {
           DEFAULT: '#3F9E86',
@@ -39,8 +39,8 @@ const config: Config = {
         },
         // Semantic aliases (keep existing class names working, restyled)
         primary: {
-          DEFAULT: '#A477CF',
-          hover: '#9569C4',
+          DEFAULT: '#E7798C',
+          hover: '#D96B82',
         },
         purple: {
           DEFAULT: '#9D79D0',
@@ -50,7 +50,7 @@ const config: Config = {
           DEFAULT: '#2F9E86',
           soft: '#DBF1EB',
         },
-        'soft-pink': '#F3ECF8',
+        'soft-pink': '#FCECEF',
         wine: {
           DEFAULT: '#6D5570',
           dark: '#5A4560',
@@ -75,20 +75,25 @@ const config: Config = {
         dialog: '0 22px 55px rgba(59, 39, 54, 0.25)',
       },
       spacing: {
-        sidebar: '250px',
-        topbar: '56px',
+        sidebar: '240px',
+        topbar: '72px',
       },
       backgroundImage: {
-        'primary-gradient': 'linear-gradient(90deg, #A477CF, #CF5D87)',
+        'primary-gradient': 'linear-gradient(90deg, #E7798C, #D96B82)',
       },
       keyframes: {
         slideIn: {
           from: { transform: 'translateX(calc(100% + 1rem))' },
           to: { transform: 'translateX(0)' },
         },
+        pageEnter: {
+          from: { opacity: '0', transform: 'translateY(4px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
       },
       animation: {
         slideIn: 'slideIn 200ms ease-out',
+        pageEnter: 'pageEnter 160ms ease-out',
       },
     },
   },
