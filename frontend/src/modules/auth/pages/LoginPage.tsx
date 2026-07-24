@@ -1,15 +1,18 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
-import { useAuth } from '@/app/providers/AuthProvider';
-import { getLandingPath } from '@/app/config/menu';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Eye, EyeOff, Loader2, CakeSlice } from "lucide-react";
+import { useAuth } from "@/app/providers/AuthProvider";
+import { getLandingPath } from "@/app/config/menu";
 
 const loginSchema = z.object({
-  email: z.string().min(1, 'El correo es obligatorio').email('El correo no es válido'),
-  password: z.string().min(1, 'La contraseña es obligatoria'),
+  email: z
+    .string()
+    .min(1, "El correo es obligatorio")
+    .email("El correo no es válido"),
+  password: z.string().min(1, "La contraseña es obligatoria"),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -18,7 +21,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [serverError, setServerError] = useState('');
+  const [serverError, setServerError] = useState("");
 
   const {
     register,
@@ -29,17 +32,17 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    setServerError('');
+    setServerError("");
     try {
       const response = await login(data);
       if (response.mustChangePassword) {
-        navigate('/change-password');
+        navigate("/change-password");
       } else {
         const permissions = response.user.permissions ?? [];
         navigate(getLandingPath((p) => permissions.includes(p)));
       }
     } catch {
-      setServerError('Credenciales incorrectas');
+      setServerError("Credenciales incorrectas");
     }
   };
 
@@ -50,31 +53,22 @@ export default function LoginPage() {
           <div className="absolute top-6 left-6 z-10">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                <span className="text-white text-xs font-semibold">M</span>
+                <CakeSlice className="w-4 h-4 text-[#FF6B9A]" />
               </div>
-              <span className="text-white/70 text-xs uppercase tracking-widest">Pastelería</span>
+              <span className="text-[#FF6B9A] text-xs uppercase tracking-widest">
+                Pastelería
+              </span>
             </div>
           </div>
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 z-10 text-center">
-            <h1 className="font-script text-7xl md:text-8xl text-white drop-shadow-lg">Manjau</h1>
+            <h1 className="font-script text-7xl md:text-8xl text-[#FF6B9A] drop-shadow-lg">
+              Manjau
+            </h1>
           </div>
           <div
             className="w-full h-full bg-cover bg-center"
             style={{
-              backgroundImage: `url("data:image/svg+xml,${encodeURIComponent(
-                `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600">
-                  <rect width="400" height="600" fill="#754647"/>
-                  <ellipse cx="200" cy="350" rx="150" ry="120" fill="#945858"/>
-                  <ellipse cx="200" cy="340" rx="130" ry="100" fill="#A76B6B"/>
-                  <circle cx="160" cy="320" r="8" fill="#E5768B"/>
-                  <circle cx="200" cy="300" r="8" fill="#E5768B"/>
-                  <circle cx="240" cy="320" r="8" fill="#E5768B"/>
-                  <ellipse cx="200" cy="400" rx="100" ry="20" fill="#FFF8F9" opacity="0.3"/>
-                  <rect x="150" y="420" width="100" height="8" rx="4" fill="#FDEEF2" opacity="0.5"/>
-                  <rect x="120" y="440" width="160" height="4" rx="2" fill="#FDEEF2" opacity="0.3"/>
-                  <rect x="130" y="450" width="140" height="4" rx="2" fill="#FDEEF2" opacity="0.3"/>
-                </svg>`
-              )}"`,
+              backgroundImage: `url(/images/LOGIN.jpg)`,
             }}
           />
         </div>
@@ -86,52 +80,84 @@ export default function LoginPage() {
               <p className="text-xs text-text-muted uppercase tracking-wider mt-1">
                 Sistema de Gestión de Redes Sociales
               </p>
-              <p className="text-sm text-text-muted mt-4">Ingresa tus credenciales para continuar</p>
+              <p className="text-sm text-text-muted mt-4">
+                Ingresa tus credenciales para continuar
+              </p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-text mb-1.5">Usuario</label>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-text mb-1.5"
+                >
+                  Usuario
+                </label>
                 <input
                   id="email"
                   type="email"
                   autoComplete="username"
                   placeholder="usuario@manjau.com"
-                  {...register('email')}
+                  {...register("email")}
                   className="input-field"
                 />
-                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+                {errors.email && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-text mb-1.5">Contraseña</label>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-text mb-1.5"
+                >
+                  Contraseña
+                </label>
                 <div className="relative">
                   <input
                     id="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
-                    {...register('password')}
+                    {...register("password")}
                     className="input-field pr-10"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text"
-                    aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                    aria-label={
+                      showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                    }
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
-                {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+                {errors.password && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
 
               {serverError && (
-                <div className="bg-red-50 text-red-600 text-sm p-3 rounded-xl">{serverError}</div>
+                <div className="bg-red-50 text-red-600 text-sm p-3 rounded-xl">
+                  {serverError}
+                </div>
               )}
 
-              <button type="submit" disabled={isSubmitting} className="btn-primary w-full flex items-center justify-center gap-2">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="btn-primary w-full flex items-center justify-center gap-2"
+              >
                 {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                {isSubmitting ? 'Iniciando sesión...' : 'Iniciar sesión'}
+                {isSubmitting ? "Iniciando sesión..." : "Iniciar sesión"}
               </button>
             </form>
 
