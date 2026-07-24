@@ -140,6 +140,9 @@ Requiere permiso: `AUDIT_VIEW`
 GET /audit-logs?search=&role=&action=&from=&to=&page=0&size=10
 ```
 
+Devuelve el DTO estable `PageResponse` (`content`, `page`, `size`,
+`totalElements`, `totalPages`, `first`, `last`). `page` empieza en cero.
+
 ## Catálogos de referencia
 
 ```

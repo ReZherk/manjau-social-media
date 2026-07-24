@@ -9,6 +9,8 @@ import { LoadingSkeleton } from '@/shared/components/LoadingSkeleton';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { ErrorState } from '@/shared/components/ErrorState';
 import { formatDateTime } from '@/shared/lib/utils';
+import type { PageResponse } from '@/shared/types/api';
+import { useRoles } from '@/modules/users/hooks/useRoles';
 
 interface AuditLog {
   id: string;
@@ -22,35 +24,34 @@ interface AuditLog {
   occurredAt: string;
 }
 
-interface AuditPageResponse {
-  content: AuditLog[];
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-}
-
-const actionOptions = [
-  { value: 'LOGIN_SUCCEEDED', label: 'Inicio de sesión' },
-  { value: 'LOGIN_FAILED', label: 'Inicio fallido' },
-  { value: 'USER_CREATED', label: 'Usuario creado' },
-  { value: 'USER_UPDATED', label: 'Usuario actualizado' },
-  { value: 'USER_ACTIVATED', label: 'Usuario activado' },
-  { value: 'USER_DEACTIVATED', label: 'Usuario desactivado' },
-  { value: 'USER_CREDENTIALS_RESET', label: 'Credenciales restablecidas' },
-  { value: 'PASSWORD_CHANGED', label: 'Contraseña cambiada' },
-];
-
 export default function AuditPage() {
   const [search, setSearch] = useState('');
   const [action, setAction] = useState('');
+  const [role, setRole] = useState('');
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
   const [page, setPage] = useState(0);
+  const rolesQuery = useRoles();
+  const actionsQuery = useQuery<Array<{ code: string; name: string }>>({
+    queryKey: ['audit-actions'],
+    queryFn: async () => (await apiClient.get('/audit-logs/actions')).data,
+  });
+  const actionOptions = (actionsQuery.data ?? []).map((item) => ({ value: item.code, label: item.name }));
+  const roleOptions = (rolesQuery.data?.data ?? []).map((item) => ({ value: item.code, label: item.name }));
 
-  const { data, isLoading, isError, refetch } = useQuery<AuditPageResponse>({
-    queryKey: ['audit-logs', search, action, page],
+  const { data, isLoading, isError, refetch } = useQuery<PageResponse<AuditLog>>({
+    queryKey: ['audit-logs', search, action, role, from, to, page],
     queryFn: async () => {
       const res = await apiClient.get('/audit-logs', {
-        params: { search: search || undefined, action: action || undefined, page, size: 10 },
+        params: {
+          search: search || undefined,
+          action: action || undefined,
+          role: role || undefined,
+          from: from ? new Date(`${from}T00:00:00`).toISOString() : undefined,
+          to: to ? new Date(`${to}T23:59:59`).toISOString() : undefined,
+          page: Number.isInteger(page) && page >= 0 ? page : 0,
+          size: 10,
+        },
       });
       return res.data;
     },
@@ -62,8 +63,11 @@ export default function AuditPage() {
 
       <div className="card p-4 mb-6 space-y-4">
         <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(0); }} placeholder="Buscar por usuario o acción..." />
-        <div className="flex gap-3">
+        <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-3">
           <FilterSelect value={action} onChange={(v) => { setAction(v); setPage(0); }} options={actionOptions} placeholder="Todas las acciones" />
+          <FilterSelect value={role} onChange={(v) => { setRole(v); setPage(0); }} options={roleOptions} placeholder="Todos los roles" />
+          <label className="text-xs text-text-muted">Desde<input type="date" className="input-field mt-1" value={from} onChange={(e) => { setFrom(e.target.value); setPage(0); }} /></label>
+          <label className="text-xs text-text-muted">Hasta<input type="date" className="input-field mt-1" value={to} onChange={(e) => { setTo(e.target.value); setPage(0); }} /></label>
         </div>
       </div>
 
@@ -110,7 +114,7 @@ export default function AuditPage() {
               page={data.page}
               totalPages={data.totalPages}
               totalElements={data.totalElements}
-              onPageChange={setPage}
+              onPageChange={(nextPage) => setPage(Number.isInteger(nextPage) && nextPage >= 0 ? nextPage : 0)}
             />
           </div>
         )}

@@ -114,10 +114,9 @@ public class UserService {
         pst.setCreatedAt(Instant.now());
         passwordSetupTokenRepository.save(pst);
 
-        User finalUser = user;
         UserResponse userResponse = toResponse(user);
 
-        auditService.log(actorId, "Admin", "ADMINISTRATOR", "USER_CREATED", "User", user.getId().toString(), null, userResponse);
+        audit(actorId, "USER_CREATED", user.getId(), null, userResponse);
 
         String setupLink = frontendUrl + "/change-password?token=" + rawToken;
         try {
@@ -153,11 +152,10 @@ public class UserService {
         User.UserData newData = new User.UserData(user.getFirstName(), user.getPaternalSurname(),
                 user.getMaternalSurname(), user.getInstitutionalEmail(), user.getRole().getCode());
 
-        auditService.log(actorId, "Admin", "ADMINISTRATOR", "USER_UPDATED", "User", user.getId().toString(), previousData, newData);
+        audit(actorId, "USER_UPDATED", user.getId(), previousData, newData);
 
         if (!oldRole.equals(request.getRoleCode())) {
-            auditService.log(actorId, "Admin", "ADMINISTRATOR", "USER_ROLE_CHANGED", "User",
-                    user.getId().toString(), previousData, newData);
+            audit(actorId, "USER_ROLE_CHANGED", user.getId(), previousData, newData);
         }
 
         return toResponse(user);
@@ -174,7 +172,7 @@ public class UserService {
         user = userRepository.save(user);
 
         String action = "ACTIVE".equals(newStatus) ? "USER_ACTIVATED" : "USER_DEACTIVATED";
-        auditService.log(actorId, "Admin", "ADMINISTRATOR", action, "User", user.getId().toString(), oldStatus, newStatus);
+        audit(actorId, action, user.getId(), oldStatus, newStatus);
 
         return toResponse(user);
     }
@@ -198,7 +196,7 @@ public class UserService {
         pst.setCreatedAt(Instant.now());
         passwordSetupTokenRepository.save(pst);
 
-        auditService.log(actorId, "Admin", "ADMINISTRATOR", "USER_CREDENTIALS_RESET", "User", user.getId().toString(), null, null);
+        audit(actorId, "USER_CREDENTIALS_RESET", user.getId(), null, null);
 
         String setupLink = frontendUrl + "/change-password?token=" + rawToken;
         try {
@@ -226,6 +224,14 @@ public class UserService {
         response.setLastAccessAt(user.getLastAccessAt());
         response.setCreatedAt(user.getCreatedAt());
         return response;
+    }
+
+    private void audit(UUID actorId, String action, UUID entityId, Object previous, Object current) {
+        User actor = userRepository.findById(actorId).orElse(null);
+        auditService.log(actorId,
+                actor == null ? "Sistema" : actor.getFullName(),
+                actor == null ? "SYSTEM" : actor.getRole().getCode(),
+                action, "User", entityId.toString(), previous, current);
     }
 
     private String generateTemporaryPassword() {

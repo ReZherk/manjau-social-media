@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +35,20 @@ public class GlobalExceptionHandler {
                 "Existen datos inválidos",
                 request.getDescription(false).replace("uri=", ""),
                 errors
+        );
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex, WebRequest request) {
+        String parameter = ex.getName();
+        String expected = ex.getRequiredType() == null ? "válido" : ex.getRequiredType().getSimpleName();
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                "INVALID_REQUEST_PARAMETER",
+                "El parámetro '" + parameter + "' debe tener un valor " + expected,
+                request.getDescription(false).replace("uri=", ""),
+                Map.of(parameter, "Valor inválido: " + String.valueOf(ex.getValue()))
         );
         return ResponseEntity.badRequest().body(response);
     }

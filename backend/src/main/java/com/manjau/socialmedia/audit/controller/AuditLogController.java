@@ -1,13 +1,15 @@
 package com.manjau.socialmedia.audit.controller;
 
 import com.manjau.socialmedia.audit.dto.AuditLogResponse;
+import com.manjau.socialmedia.audit.dto.AuditActionResponse;
 import com.manjau.socialmedia.audit.service.AuditLogService;
-import org.springframework.data.domain.Page;
+import com.manjau.socialmedia.shared.dto.PageResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/audit-logs")
@@ -21,7 +23,7 @@ public class AuditLogController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('AUDIT_VIEW')")
-    public ResponseEntity<Page<AuditLogResponse>> findAll(
+    public ResponseEntity<PageResponse<AuditLogResponse>> findAll(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String role,
             @RequestParam(required = false) String action,
@@ -30,5 +32,11 @@ public class AuditLogController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(auditLogService.findAll(search, role, action, from, to, page, size));
+    }
+
+    @GetMapping("/actions")
+    @PreAuthorize("hasAuthority('AUDIT_VIEW')")
+    public ResponseEntity<List<AuditActionResponse>> actions() {
+        return ResponseEntity.ok(auditLogService.findActions());
     }
 }
