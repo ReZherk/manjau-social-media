@@ -60,7 +60,7 @@ export default function LoginPage() {
               </span>
             </div>
           </div>
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 z-10 text-center">
+          <div className="absolute top-[18%] left-1/2 -translate-x-1/2 z-10 text-center">
             <h1 className="font-script text-7xl md:text-8xl text-[#FF6B9A] drop-shadow-lg">
               Manjau
             </h1>
