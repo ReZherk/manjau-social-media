@@ -124,12 +124,12 @@ public class SocialAccountService {
         getAccount(id); // ensure it exists
         SocialAccountCredential credential = credentialRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("La cuenta no tiene credenciales registradas"));
-        // Audit the reveal WITHOUT storing the credential values.
+        String username = cryptoService.decrypt(credential.getAccessUsernameEncrypted());
+        String secret = cryptoService.decrypt(credential.getAccessSecretEncrypted());
+
+        // Audit only successful reveals and never store the credential values.
         audit(actorId, "SOCIAL_CREDENTIAL_REVEALED", id, null, null);
-        return new RevealCredentialResponse(
-                cryptoService.decrypt(credential.getAccessUsernameEncrypted()),
-                cryptoService.decrypt(credential.getAccessSecretEncrypted())
-        );
+        return new RevealCredentialResponse(username, secret);
     }
 
     private SocialAccount getAccount(UUID id) {

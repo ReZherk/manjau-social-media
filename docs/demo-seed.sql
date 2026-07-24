@@ -6,9 +6,9 @@
 --  varios días (para pasar la regla de 7 días) + sus métricas.
 --  Resultado: KPIs y Reportes muestran datos de ejemplo.
 --
---  Nota: las credenciales de estas cuentas son de relleno, así que el
---  "revelar credenciales" NO funcionará en ellas (para demostrar ese punto,
---  crea una cuenta desde la UI). Todo lo demás (métricas/KPI/reportes) sí.
+--  Nota: estas cuentas se crean sin credenciales. Si necesitas revelarlas,
+--  edita cada cuenta desde la UI e ingresa usuario y contraseña; el backend
+--  las almacenará cifradas. Todo lo demás (métricas/KPI/reportes) funciona.
 -- ============================================================================
 DO $$
 DECLARE
@@ -35,20 +35,16 @@ BEGIN
   SELECT id INTO v_ct_story    FROM content_types WHERE code = 'STORY';
 
   -- ---------- Cuentas sociales ----------
+  -- Las cuentas demo se crean sin credenciales. Los valores sensibles deben
+  -- ingresarse luego desde la UI para que CryptoService los cifre con AES-GCM.
   INSERT INTO social_accounts (platform_id, account_name, status, created_by)
     VALUES (v_ig, 'Instagram Manjau (demo)', 'ACTIVE', v_admin) RETURNING id INTO v_acc_ig;
-  INSERT INTO social_account_credentials (social_account_id, access_username_encrypted, access_secret_encrypted)
-    VALUES (v_acc_ig, 'demo', 'demo');
 
   INSERT INTO social_accounts (platform_id, account_name, status, created_by)
     VALUES (v_fb, 'Facebook Manjau (demo)', 'ACTIVE', v_admin) RETURNING id INTO v_acc_fb;
-  INSERT INTO social_account_credentials (social_account_id, access_username_encrypted, access_secret_encrypted)
-    VALUES (v_acc_fb, 'demo', 'demo');
 
   INSERT INTO social_accounts (platform_id, account_name, status, created_by)
     VALUES (v_tt, 'TikTok Manjau (demo)', 'ACTIVE', v_admin) RETURNING id INTO v_acc_tt;
-  INSERT INTO social_account_credentials (social_account_id, access_username_encrypted, access_secret_encrypted)
-    VALUES (v_acc_tt, 'demo', 'demo');
 
   -- ---------- Publicaciones + métricas (publicadas hace >7 días) ----------
 

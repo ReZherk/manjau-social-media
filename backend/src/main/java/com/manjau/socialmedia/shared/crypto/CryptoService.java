@@ -59,8 +59,21 @@ public class CryptoService {
         if (encrypted == null) {
             return null;
         }
+        final byte[] combined;
         try {
-            byte[] combined = Base64.getDecoder().decode(encrypted);
+            combined = Base64.getDecoder().decode(encrypted);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(
+                    "La credencial almacenada no está codificada en Base64 válido", e);
+        }
+
+        int minimumLength = IV_LENGTH + (TAG_LENGTH_BITS / Byte.SIZE);
+        if (combined.length < minimumLength) {
+            throw new IllegalArgumentException(
+                    "La credencial almacenada no tiene un formato cifrado válido");
+        }
+
+        try {
             byte[] iv = new byte[IV_LENGTH];
             System.arraycopy(combined, 0, iv, 0, IV_LENGTH);
             byte[] cipherText = new byte[combined.length - IV_LENGTH];
