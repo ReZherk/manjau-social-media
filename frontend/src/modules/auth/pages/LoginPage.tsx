@@ -68,7 +68,7 @@ export default function LoginPage() {
           <div
             className="w-full h-full bg-cover bg-center"
             style={{
-              backgroundImage: `url(/images/LOGIN.jpg)`,
+              backgroundImage: `url(/images/LOGIN.webp)`,
             }}
           />
         </div>
