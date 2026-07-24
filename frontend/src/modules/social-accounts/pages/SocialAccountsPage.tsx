@@ -109,16 +109,20 @@ export default function SocialAccountsPage() {
         }
       />
 
-      <div className="card p-4 mb-5 flex flex-col sm:flex-row gap-3">
-        <div className="flex-1">
+      <div className="card p-4 mb-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[minmax(340px,1fr)_220px_180px] gap-3">
+        <div className="min-w-0 md:col-span-2 xl:col-span-1">
           <SearchInput
             value={filters.search}
             onChange={(v) => setFilters((f) => ({ ...f, search: v, page: 0 }))}
             placeholder="Buscar por nombre de cuenta..."
           />
         </div>
-        <FilterSelect value={filters.platform} onChange={(v) => setFilters((f) => ({ ...f, platform: v, page: 0 }))} options={platformOptions} placeholder="Plataforma" />
-        <FilterSelect value={filters.status} onChange={(v) => setFilters((f) => ({ ...f, status: v, page: 0 }))} options={STATUS_OPTIONS} placeholder="Estado" />
+        <div className="min-w-0">
+          <FilterSelect value={filters.platform} onChange={(v) => setFilters((f) => ({ ...f, platform: v, page: 0 }))} options={platformOptions} placeholder="Plataforma" />
+        </div>
+        <div className="min-w-0">
+          <FilterSelect value={filters.status} onChange={(v) => setFilters((f) => ({ ...f, status: v, page: 0 }))} options={STATUS_OPTIONS} placeholder="Estado" />
+        </div>
       </div>
 
       {isLoading ? (

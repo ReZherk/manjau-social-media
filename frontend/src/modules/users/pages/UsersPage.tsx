@@ -19,6 +19,7 @@ import { CreateUserDialog } from '../components/CreateUserDialog';
 import { EditUserDialog } from '../components/EditUserDialog';
 import { ChangeUserStatusDialog } from '../components/ChangeUserStatusDialog';
 import { ResetCredentialsDialog } from '../components/ResetCredentialsDialog';
+import { UserDetailDialog } from '../components/UserDetailDialog';
 import type { UserResponse, CreateUserRequest, UpdateUserRequest } from '../types/userTypes';
 import type { CreateUserFormData, UpdateUserFormData } from '../schemas/userSchemas';
 
@@ -38,6 +39,7 @@ export default function UsersPage() {
 
   // Dialog states
   const [createOpen, setCreateOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
@@ -179,7 +181,7 @@ export default function UsersPage() {
           <div className="p-6">
             <UsersTable
               users={data.data.content}
-              onView={(u) => { setSelectedUser(u); }}
+              onView={(u) => { setSelectedUser(u); setDetailOpen(true); }}
               onEdit={(u) => { setSelectedUser(u); setEditOpen(true); }}
               onToggleStatus={(u) => { setSelectedUser(u); setStatusOpen(true); }}
               onResetCredentials={(u) => { setSelectedUser(u); setResetOpen(true); }}
@@ -195,6 +197,12 @@ export default function UsersPage() {
       </div>
 
       {/* Dialogs */}
+      <UserDetailDialog
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        user={selectedUser}
+      />
+
       <CreateUserDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
